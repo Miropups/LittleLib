@@ -24,8 +24,9 @@ def errors_check(args):
     return errors
 
 #Создание парсера и настройка его аргументов
+#python main.py lalala  --repo-url "ссылка на lalala" --test --tree
 
-parser = argparse.ArgumentParser(description='Анализатор зависимостей пакетов Python')
+parser = argparse.ArgumentParser(description='Анализ пакетов на Python')
 
 parser.add_argument('package_name', type=str, help='Имя анализируемого пакета')
 
