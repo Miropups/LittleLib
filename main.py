@@ -1,6 +1,7 @@
 import argparse
 import os
-
+import urllib.request
+import urllib.error
 #Функция, для того, что бы проверить положительны ли числа при вводе количества подстрок фильтрации
 
 def positive_int(value):
@@ -66,3 +67,72 @@ print(f"Режим тестового репозитория: {'Включен' 
 print(f"Режим вывода в виде дерева: {'Включен' if args.tree else 'Выключен'}")
 print(f"Максимальная глубина анализа: {args.max_depth}")
 print(f"Подстрока для фильтрации: '{args.filter}'" if args.filter else "Подстрока для фильтрации: не задана")
+
+def url_to_raw(repo_url):
+    possible_urls = [
+        repo_url.replace("github.com", "raw.githubusercontent.com") + "/main/Cargo.toml",
+        repo_url.replace("github.com", "raw.githubusercontent.com") + "/master/Cargo.toml",
+    ]
+    for test_url in possible_urls:
+        try:
+            with urllib.request.urlopen(test_url) as responce:
+                if responce.getcode() == 200:
+                    return test_url
+        except:
+            continue
+    default_url = possible_urls[0]
+    return default_url
+def dowload_cargo_toml(raw_url):
+    try:
+        with urllib.request.urlopen(raw_url) as response:
+            cargo_content = response.read().decode('utf-8')
+            return cargo_content
+    except urllib.error.URLError as e:
+        print(f"Ошибка загрузки: {e}")
+        return None
+    except Exception as e:
+        print(f"Неожиданная ошибка: {e}")
+        return None
+def extract_section_with_braces(content, start_pos):
+    result = []
+    brace_count = 0
+    in_section = False
+
+
+    lines = content[start_pos:].split('\n')
+
+    for line in lines:
+        stripped_line = line.strip()
+
+        if not in_section and stripped_line == "[dependencies]":
+            in_section = True
+            result.append(line)
+            continue
+
+        if in_section:
+            brace_count += line.count('{')
+            brace_count -= line.count('}')
+
+            if stripped_line.startswith('[') and brace_count == 0:
+                break
+
+        result.append(line)
+
+    return '\n'.join(result)
+            
+def dependencies_find(cargo_content):
+    deps_start = cargo_content.find("[dependencies]")
+    if deps_start != -1:
+#print("*Секция [dependencies] найдена!")
+        deps_content = extract_section_with_braces(cargo_content, deps_start)
+        print("---Прямые зависимости пакета:")
+        print(deps_content)
+    else:
+        print("Секция [dependencies] не найдена")
+
+def main():
+    raw_url = url_to_raw(args.repo_url)
+    cargo_content = dowload_cargo_toml(raw_url)
+   
+    print( dependencies_find(cargo_content))
+main()
