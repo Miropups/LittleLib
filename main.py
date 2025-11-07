@@ -3,7 +3,7 @@ import os
 import urllib.request
 import urllib.error
 #Функция, для того, что бы проверить положительны ли числа при вводе количества подстрок фильтрации
-
+#python main.py NEON --repo-url https://github.com/neon-bindings/neon 
 def positive_int(value):
     ivalue = int(value)
     if ivalue <= 0:
@@ -25,7 +25,7 @@ def errors_check(args):
     return errors
 
 #Создание парсера и настройка его аргументов
-#python main.py lalala  --repo-url "ссылка на lalala" --test --tree
+#python main.py NEON --repo-url https://github.com/neon-bindings/neon 
 
 parser = argparse.ArgumentParser(description='Анализ пакетов на Python')
 
